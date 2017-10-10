@@ -2,27 +2,45 @@ const express = require('express')
 const graphqlHTTP = require('express-graphql')
 const { buildSchema } = require('graphql')
 
+class User {
+  constructor(id) {
+    this.id = id
+  }
+
+  firstName() {
+    return 'Thibaut'
+  }
+
+  lastName() {
+    return 'Van Spaandonck'
+  }
+
+  movies({ id }) {
+    const movies = ['The Matrix', 'Fight Club']
+    if (id) {
+      return [movies[id - 1]]
+    }
+    return movies
+  }
+}
+
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
+  type User {
+    id: Int!
+    firstName: String!
+    lastName: String!
+    movies(id: Int): [String]
+  }
+
   type Query {
-    quoteOfTheDay: String
-    random: Float!
-    rollDice(numDice: Int!, numSides: Int): [Int]
+    getUser(id: Int!): User
   }
 `)
 
 // The root provides a resolver function for each API endpoint
 const root = {
-  quoteOfTheDay: () =>
-    Math.random() < 0.5 ? 'Take it easy' : 'Salvation lies within',
-  random: () => Math.random(),
-  rollDice: ({ numDice, numSides }) => {
-    const output = []
-    for (var i = 0; i < numDice; i++) {
-      output.push(1 + Math.floor(Math.random() * (numSides || 6)))
-    }
-    return output
-  }
+  getUser: ({ id }) => new User(id)
 }
 
 const app = express()
