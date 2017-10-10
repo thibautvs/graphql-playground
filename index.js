@@ -1,4 +1,6 @@
-const { graphql, buildSchema } = require('graphql')
+const express = require('express')
+const graphqlHTTP = require('express-graphql')
+const { buildSchema } = require('graphql')
 
 // Construct a schema, using GraphQL schema language
 const schema = buildSchema(`
@@ -12,5 +14,14 @@ const root = {
   firstName: () => 'Thibaut'
 }
 
-// Run the GraphQL query '{ firstName }' and print out the response
-graphql(schema, '{ firstName }', root).then(res => console.log(res))
+const app = express()
+app.use(
+  '/graphql',
+  graphqlHTTP({
+    schema: schema,
+    rootValue: root,
+    graphiql: true
+  })
+)
+app.listen(4000)
+console.log('Running a GraphQL API server at localhost:4000/graphql')
