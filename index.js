@@ -57,6 +57,7 @@ const schema = buildSchema(`
   type Query {
     getUser(id: Int!): User
     getMessage(id: ID!): Message
+    ip: String
   }
 
   type Mutation {
@@ -64,6 +65,11 @@ const schema = buildSchema(`
     updateMessage(id: ID!, input: MessageInput): Message
   }
 `)
+
+const loggingMiddleware = (req, res, next) => {
+  console.log(`IP address: ${req.ip}`)
+  next()
+}
 
 // The root provides a resolver function for each API endpoint
 const root = {
@@ -85,10 +91,12 @@ const root = {
     }
     fakeDB[id] = input
     return new Message(id, input)
-  }
+  },
+  ip: (args, req) => req.ip
 }
 
 const app = express()
+app.use(loggingMiddleware)
 app.use(
   '/graphql',
   graphqlHTTP({
